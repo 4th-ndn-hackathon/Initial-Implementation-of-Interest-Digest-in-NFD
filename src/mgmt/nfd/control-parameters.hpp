@@ -37,7 +37,6 @@ enum ControlParameterField {
   CONTROL_PARAMETER_NAME,
   CONTROL_PARAMETER_FACE_ID,
   CONTROL_PARAMETER_URI,
-  CONTROL_PARAMETER_LOCAL_CONTROL_FEATURE,
   CONTROL_PARAMETER_ORIGIN,
   CONTROL_PARAMETER_COST,
   CONTROL_PARAMETER_FLAGS,
@@ -52,7 +51,6 @@ const std::string CONTROL_PARAMETER_FIELD[CONTROL_PARAMETER_UBOUND] = {
   "Name",
   "FaceId",
   "Uri",
-  "LocalControlFeature",
   "Origin",
   "Cost",
   "Flags",
@@ -64,17 +62,8 @@ const std::string CONTROL_PARAMETER_FIELD[CONTROL_PARAMETER_UBOUND] = {
 
 /**
  * \ingroup management
- * \deprecated use Flags+Mask fields instead
- */
-enum LocalControlFeature {
-  LOCAL_CONTROL_FEATURE_INCOMING_FACE_ID = 1,
-  LOCAL_CONTROL_FEATURE_NEXT_HOP_FACE_ID = 2
-};
-
-/**
- * \ingroup management
  * \brief represents parameters in a ControlCommand request or response
- * \sa http://redmine.named-data.net/projects/nfd/wiki/ControlCommand#ControlParameters
+ * \sa https://redmine.named-data.net/projects/nfd/wiki/ControlCommand#ControlParameters
  * \details This type is copyable because it's an abstraction of a TLV type.
  */
 class ControlParameters : public mgmt::ControlParameters
@@ -193,48 +182,6 @@ public: // getters & setters
   {
     m_wire.reset();
     m_hasFields[CONTROL_PARAMETER_URI] = false;
-    return *this;
-  }
-
-  /**
-   * \deprecated use Flags+Mask fields instead
-   */
-  bool
-  hasLocalControlFeature() const
-  {
-    return m_hasFields[CONTROL_PARAMETER_LOCAL_CONTROL_FEATURE];
-  }
-
-  /**
-   * \deprecated use Flags+Mask fields instead
-   */
-  LocalControlFeature
-  getLocalControlFeature() const
-  {
-    BOOST_ASSERT(this->hasLocalControlFeature());
-    return m_localControlFeature;
-  }
-
-  /**
-   * \deprecated use Flags+Mask fields instead
-   */
-  ControlParameters&
-  setLocalControlFeature(LocalControlFeature localControlFeature)
-  {
-    m_wire.reset();
-    m_localControlFeature = localControlFeature;
-    m_hasFields[CONTROL_PARAMETER_LOCAL_CONTROL_FEATURE] = true;
-    return *this;
-  }
-
-  /**
-   * \deprecated use Flags+Mask fields instead
-   */
-  ControlParameters&
-  unsetLocalControlFeature()
-  {
-    m_wire.reset();
-    m_hasFields[CONTROL_PARAMETER_LOCAL_CONTROL_FEATURE] = false;
     return *this;
   }
 
@@ -492,7 +439,6 @@ private: // fields
   Name                m_name;
   uint64_t            m_faceId;
   std::string         m_uri;
-  LocalControlFeature m_localControlFeature;
   uint64_t            m_origin;
   uint64_t            m_cost;
   uint64_t            m_flags;

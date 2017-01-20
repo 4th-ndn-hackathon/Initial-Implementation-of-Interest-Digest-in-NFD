@@ -230,7 +230,7 @@ BOOST_FIXTURE_TEST_CASE(Decode, TestDataFixture)
   BOOST_REQUIRE_EQUAL(std::string(reinterpret_cast<const char*>(d.getContent().value()),
                                   d.getContent().value_size()), "SUCCESS!");
 
-  BOOST_REQUIRE_EQUAL(d.getSignature().getType(), static_cast<uint32_t>(Signature::Sha256WithRsa));
+  BOOST_REQUIRE_EQUAL(d.getSignature().getType(), tlv::SignatureSha256WithRsa);
   ndn::Block block = d.getSignature().getInfo();
   block.parse();
   KeyLocator keyLocator;
@@ -261,7 +261,7 @@ BOOST_FIXTURE_TEST_CASE(Encode, TestDataFixture)
   Block signatureInfo(tlv::SignatureInfo);
   // SignatureType
   {
-    signatureInfo.push_back(makeNonNegativeIntegerBlock(tlv::SignatureType, Signature::Sha256WithRsa));
+    signatureInfo.push_back(makeNonNegativeIntegerBlock(tlv::SignatureType, tlv::SignatureSha256WithRsa));
   }
   // KeyLocator
   {
