@@ -98,6 +98,11 @@ GenericLinkService::encodeLpFields(const ndn::TagHost& netPkt, lp::Packet& lpPac
   if (congestionMarkTag != nullptr) {
     lpPacket.add<lp::CongestionMarkField>(*congestionMarkTag);
   }
+
+  shared_ptr<lp::InterestDigestTag> interestDigestTag = netPkt.getTag<lp::InterestDigestTag>();
+  if (interestDigestTag != nullptr) {
+    lpPacket.add<lp::InterestDigestField>(*interestDigestTag);
+  }
 }
 
 void
@@ -246,6 +251,10 @@ GenericLinkService::decodeInterest(const Block& netPkt, const lp::Packet& firstP
     interest->setTag(make_shared<lp::CongestionMarkTag>(firstPkt.get<lp::CongestionMarkField>()));
   }
 
+  if (firstPkt.has<lp::InterestDigestField>()) {
+    interest->setTag(make_shared<lp::InterestDigestTag>(firstPkt.get<lp::InterestDigestField>()));
+  }
+
   this->receiveInterest(*interest);
 }
 
@@ -288,6 +297,10 @@ GenericLinkService::decodeData(const Block& netPkt, const lp::Packet& firstPkt)
     data->setTag(make_shared<lp::CongestionMarkTag>(firstPkt.get<lp::CongestionMarkField>()));
   }
 
+  if (firstPkt.has<lp::InterestDigestField>()) {
+    data->setTag(make_shared<lp::InterestDigestTag>(firstPkt.get<lp::InterestDigestField>()));
+  }
+
   this->receiveData(*data);
 }
 
@@ -318,6 +331,10 @@ GenericLinkService::decodeNack(const Block& netPkt, const lp::Packet& firstPkt)
 
   if (firstPkt.has<lp::CongestionMarkField>()) {
     nack.setTag(make_shared<lp::CongestionMarkTag>(firstPkt.get<lp::CongestionMarkField>()));
+  }
+
+  if (firstPkt.has<lp::InterestDigestField>()) {
+    nack.setTag(make_shared<lp::InterestDigestTag>(firstPkt.get<lp::InterestDigestField>()));
   }
 
   this->receiveNack(nack);
