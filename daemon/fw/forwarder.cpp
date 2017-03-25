@@ -505,6 +505,7 @@ Forwarder::onOutgoingNack(const shared_ptr<pit::Entry>& pitEntry, const Face& ou
   // create Nack packet with the Interest from in-record
   lp::Nack nackPkt(inRecord->getInterest());
   nackPkt.setHeader(nack);
+  nackPkt.setTag(make_shared<lp::InterestDigestTag>(pitEntry->m_digest));
 
   // erase in-record
   pitEntry->deleteInRecord(outFace);
