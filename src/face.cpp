@@ -211,26 +211,20 @@ Face::put(const Data& data)
   Block wire = data.wireEncode();
 
   lp::Packet packet;
-  bool hasLpFields = false;
 
   shared_ptr<lp::CachePolicyTag> cachePolicyTag = data.getTag<lp::CachePolicyTag>();
   if (cachePolicyTag != nullptr) {
     packet.add<lp::CachePolicyField>(*cachePolicyTag);
-    hasLpFields = true;
   }
 
   shared_ptr<lp::CongestionMarkTag> congestionMarkTag = data.getTag<lp::CongestionMarkTag>();
   if (congestionMarkTag != nullptr) {
     packet.add<lp::CongestionMarkField>(*congestionMarkTag);
-    hasLpFields = true;
   }
 
-  packet.set<lp::InterestDigestField>(m_impl->getInterestDigest());
-
-  if (hasLpFields) {
-    packet.add<lp::FragmentField>(std::make_pair(wire.begin(), wire.end()));
-    wire = packet.wireEncode();
-  }
+  packet.set<lp::InterestDigestField>(m_impl->m_lastDigest);
+  packet.add<lp::FragmentField>(std::make_pair(wire.begin(), wire.end()));
+  wire = packet.wireEncode();
 
   if (wire.size() > MAX_NDN_PACKET_SIZE)
     BOOST_THROW_EXCEPTION(Error("Data size exceeds maximum limit"));
@@ -253,7 +247,7 @@ Face::put(const lp::Nack& nack)
     packet.add<lp::CongestionMarkField>(*congestionMarkTag);
   }
 
-  packet.set<lp::InterestDigestField>(m_impl->getInterestDigest());
+  packet.set<lp::InterestDigestField>(m_impl->m_lastDigest);
 
   Block wire = packet.wireEncode();
 

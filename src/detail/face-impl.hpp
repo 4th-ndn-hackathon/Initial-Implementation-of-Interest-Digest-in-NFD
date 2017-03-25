@@ -294,12 +294,6 @@ public: // IO routine
     }
   }
 
-  InterestDigest&
-  getInterestDigest()
-  {
-    return m_lastDigest;
-  }
-
 private:
   Face& m_face;
   util::Scheduler m_scheduler;
