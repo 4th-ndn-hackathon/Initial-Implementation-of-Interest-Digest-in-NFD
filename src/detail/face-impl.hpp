@@ -98,6 +98,8 @@ public: // consumer
       packet.add<lp::CongestionMarkField>(*congestionMarkTag);
     }
 
+    packet.set<lp::InterestDigestField>(interest->computeDigest());
+
     packet.add<lp::FragmentField>(std::make_pair(interest->wireEncode().begin(),
                                                  interest->wireEncode().end()));
 
@@ -168,6 +170,7 @@ public: // producer
   void
   processInterestFilters(Interest& interest)
   {
+    m_lastDigest = *interest.getTag<lp::InterestDigestTag>();
     for (const auto& filter : m_interestFilterTable) {
       if (filter->doesMatch(interest.getName())) {
         filter->invokeInterestCallback(interest);
@@ -291,6 +294,12 @@ public: // IO routine
     }
   }
 
+  InterestDigest&
+  getInterestDigest()
+  {
+    return m_lastDigest;
+  }
+
 private:
   Face& m_face;
   util::Scheduler m_scheduler;
@@ -302,6 +311,7 @@ private:
 
   unique_ptr<boost::asio::io_service::work> m_ioServiceWork; // if thread needs to be preserved
 
+  InterestDigest m_lastDigest;
   friend class Face;
 };
 

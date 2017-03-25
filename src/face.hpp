@@ -30,6 +30,7 @@
 #include "data.hpp"
 #include "encoding/nfd-constants.hpp"
 #include "lp/nack.hpp"
+#include "lp/tags.hpp"
 #include "security/signing-info.hpp"
 #include "security/key-chain.hpp"
 

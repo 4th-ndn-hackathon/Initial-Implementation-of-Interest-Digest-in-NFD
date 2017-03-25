@@ -225,6 +225,8 @@ Face::put(const Data& data)
     hasLpFields = true;
   }
 
+  packet.set<lp::InterestDigestField>(m_impl->getInterestDigest());
+
   if (hasLpFields) {
     packet.add<lp::FragmentField>(std::make_pair(wire.begin(), wire.end()));
     wire = packet.wireEncode();
@@ -250,6 +252,8 @@ Face::put(const lp::Nack& nack)
   if (congestionMarkTag != nullptr) {
     packet.add<lp::CongestionMarkField>(*congestionMarkTag);
   }
+
+  packet.set<lp::InterestDigestField>(m_impl->getInterestDigest());
 
   Block wire = packet.wireEncode();
 
@@ -412,6 +416,10 @@ extractLpLocalFields(NetPkt& netPacket, const lp::Packet& lpPacket)
 
   if (lpPacket.has<lp::CongestionMarkField>()) {
     netPacket.setTag(make_shared<lp::CongestionMarkTag>(lpPacket.get<lp::CongestionMarkField>()));
+  }
+
+  if (lpPacket.has<lp::InterestDigestField>()) {
+    netPacket.setTag(make_shared<lp::InterestDigestTag>(lpPacket.get<lp::InterestDigestField>()));
   }
 }
 
