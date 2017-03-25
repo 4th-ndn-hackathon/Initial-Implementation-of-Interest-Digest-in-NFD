@@ -73,16 +73,18 @@ Interest::computeDigest() const
   OBufferStream os;
   source >> digestFilter(DigestAlgorithm::SHA256) >> streamSink(os);
   source.write(m_name.wireEncode().wire(), m_name.wireEncode().size());
-  // if (!m_selectors.empty()) {
-  //   source.write(m_selector);
-  // }
+  if (!m_selectors.empty()) {
+    source.write(m_selectors.wireEncode().wire(), m_selectors.wireEncode().size());
+  }
+  if (!m_link.empty()) {
+    source.write(m_link.wire(), m_link.size());
+  }
   source.end();
 
   InterestDigest d;
   ConstBufferPtr buf = os.buf();
   BOOST_ASSERT(std::distance(buf->begin(), buf->end()) == d.size());
-  std::cout << "size of the sha256: " << std::distance(buf->begin(), buf->end()) << std::endl;
-  std::copy_n(buf->begin(), std::distance(buf->begin(), buf->end()), d.data());
+  std::copy_n(buf->begin(), d.size(), d.data());
   return d;
 }
 
