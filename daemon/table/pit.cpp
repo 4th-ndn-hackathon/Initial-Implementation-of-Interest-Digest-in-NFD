@@ -24,92 +24,72 @@
  */
 
 #include "pit.hpp"
+#include <ndn-cxx/lp/tags.hpp>
+#include "core/logger.hpp"
 
 namespace nfd {
 namespace pit {
 
-static inline bool
-nteHasPitEntries(const name_tree::Entry& nte)
+NFD_LOG_INIT("Pit");
+
+Pit::Pit()
+  : m_nItems(0)
 {
-  return nte.hasPitEntries();
 }
 
-Pit::Pit(NameTree& nameTree)
-  : m_nameTree(nameTree)
-  , m_nItems(0)
+shared_ptr<Entry>
+Pit::find(const Interest& interest) const
 {
+  InterestDigest d = interest.computeDigest();
+  auto it = m_table.find(d);
+  return it == m_table.end() ? nullptr : it->second;
 }
 
 std::pair<shared_ptr<Entry>, bool>
-Pit::findOrInsert(const Interest& interest, bool allowInsert)
+Pit::insert(const Interest& interest)
 {
-  // determine which NameTree entry should the PIT entry be attached onto
-  const Name& name = interest.getName();
-  bool isEndWithDigest = name.size() > 0 && name[-1].isImplicitSha256Digest();
-  const Name& nteName = isEndWithDigest ? name.getPrefix(-1) : name;
+  InterestDigest d = interest.computeDigest();
+  std::map<InterestDigest, shared_ptr<Entry>>::iterator it, upper;
+  std::tie(it, upper) = m_table.equal_range(d);
 
-  // ensure NameTree entry exists
-  name_tree::Entry* nte = nullptr;
-  if (allowInsert) {
-    nte = &m_nameTree.lookup(nteName);
+  if (it == upper) {
+    it = m_table.emplace_hint(it, d, make_shared<Entry>(interest, d));
+    BOOST_ASSERT(it->second->canMatch(interest));
+    ++m_nItems;
+    return {it->second, true};
   }
   else {
-    nte = m_nameTree.findExactMatch(nteName);
-    if (nte == nullptr) {
-      return {nullptr, true};
-    }
+    return {it->second, false};
   }
-
-  // check if PIT entry already exists
-  size_t nteNameLen = nteName.size();
-  const std::vector<shared_ptr<Entry>>& pitEntries = nte->getPitEntries();
-  auto it = std::find_if(pitEntries.begin(), pitEntries.end(),
-    [&interest, nteNameLen] (const shared_ptr<Entry>& entry) {
-      // initial part of name is guaranteed to be equal by NameTree
-      // check implicit digest (or its absence) only
-      return entry->canMatch(interest, nteNameLen);
-    });
-  if (it != pitEntries.end()) {
-    return {*it, false};
-  }
-
-  if (!allowInsert) {
-    BOOST_ASSERT(!nte->isEmpty()); // nte shouldn't be created in this call
-    return {nullptr, true};
-  }
-
-  auto entry = make_shared<Entry>(interest);
-  nte->insertPitEntry(entry);
-  ++m_nItems;
-  return {entry, true};
 }
 
 DataMatchResult
 Pit::findAllDataMatches(const Data& data) const
 {
-  auto&& ntMatches = m_nameTree.findAllMatches(data.getName(), &nteHasPitEntries);
-
   DataMatchResult matches;
-  for (const name_tree::Entry& nte : ntMatches) {
-    for (const shared_ptr<Entry>& pitEntry : nte.getPitEntries()) {
-      if (pitEntry->getInterest().matchesData(data))
-        matches.emplace_back(pitEntry);
-    }
+
+  auto tag = data.getTag<lp::InterestDigestTag>();
+  if (tag == nullptr) {
+    NFD_LOG_WARN("Data " << data.getName() << " has no InterestDigestTag");
+    return matches;
+  }
+
+  InterestDigest d = *tag;
+  auto it = m_table.find(d);
+  if (it != m_table.end() && it->second->getInterest().matchesData(data)) {
+    matches.emplace_back(it->second);
   }
 
   return matches;
 }
 
 void
-Pit::erase(Entry* entry, bool canDeleteNte)
+Pit::erase(Entry* entry)
 {
-  name_tree::Entry* nte = m_nameTree.getEntry(*entry);
-  BOOST_ASSERT(nte != nullptr);
-
-  nte->erasePitEntry(entry);
-  if (canDeleteNte) {
-    m_nameTree.eraseIfEmpty(nte);
-  }
+  BOOST_ASSERT(entry != nullptr);
+  auto it = m_table.find(entry->m_digest);
+  BOOST_ASSERT(it != m_table.end());
+  m_table.erase(it);
   --m_nItems;
 }
 
@@ -124,10 +104,22 @@ Pit::deleteInOutRecords(Entry* entry, const Face& face)
   /// \todo decide whether to delete PIT entry if there's no more in/out-record left
 }
 
+Pit::ForwardRange
+Pit::getForwardRange() const
+{
+  return m_table | boost::adaptors::map_values | boost::adaptors::indirected;
+}
+
 Pit::const_iterator
 Pit::begin() const
 {
-  return const_iterator(m_nameTree.fullEnumerate(&nteHasPitEntries).begin());
+  return this->getForwardRange().begin();
+}
+
+Pit::const_iterator
+Pit::end() const
+{
+  return this->getForwardRange().end();
 }
 
 } // namespace pit

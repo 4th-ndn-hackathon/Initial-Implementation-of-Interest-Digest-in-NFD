@@ -103,6 +103,9 @@ GenericLinkService::encodeLpFields(const ndn::TagHost& netPkt, lp::Packet& lpPac
   if (interestDigestTag != nullptr) {
     lpPacket.add<lp::InterestDigestField>(*interestDigestTag);
   }
+  else {
+    NFD_LOG_WARN("netPkt has no InterestDigestTag");
+  }
 }
 
 void
@@ -254,6 +257,9 @@ GenericLinkService::decodeInterest(const Block& netPkt, const lp::Packet& firstP
   if (firstPkt.has<lp::InterestDigestField>()) {
     interest->setTag(make_shared<lp::InterestDigestTag>(firstPkt.get<lp::InterestDigestField>()));
   }
+  else {
+    NFD_LOG_FACE_WARN("received Interest without InterestDigest");
+  }
 
   this->receiveInterest(*interest);
 }
@@ -300,6 +306,9 @@ GenericLinkService::decodeData(const Block& netPkt, const lp::Packet& firstPkt)
   if (firstPkt.has<lp::InterestDigestField>()) {
     data->setTag(make_shared<lp::InterestDigestTag>(firstPkt.get<lp::InterestDigestField>()));
   }
+  else {
+    NFD_LOG_FACE_WARN("received Data without InterestDigest");
+  }
 
   this->receiveData(*data);
 }
@@ -335,6 +344,9 @@ GenericLinkService::decodeNack(const Block& netPkt, const lp::Packet& firstPkt)
 
   if (firstPkt.has<lp::InterestDigestField>()) {
     nack.setTag(make_shared<lp::InterestDigestTag>(firstPkt.get<lp::InterestDigestField>()));
+  }
+  else {
+    NFD_LOG_FACE_WARN("received Nack without InterestDigest");
   }
 
   this->receiveNack(nack);

@@ -78,22 +78,6 @@ NameTree::lookup(const fib::Entry& fibEntry)
 Entry&
 NameTree::lookup(const pit::Entry& pitEntry)
 {
-  Entry* nte = this->getEntry(pitEntry);
-  BOOST_ASSERT(nte != nullptr);
-
-  BOOST_ASSERT(std::count_if(nte->getPitEntries().begin(), nte->getPitEntries().end(),
-    [&pitEntry] (const shared_ptr<pit::Entry>& pitEntry1) {
-      return pitEntry1.get() == &pitEntry;
-    }) == 1);
-
-  if (nte->getName().size() == pitEntry.getName().size()) {
-    return *nte;
-  }
-
-  // special case: PIT entry whose Interest name ends with an implicit digest
-  // are attached to the name tree entry with one-shorter-prefix.
-  BOOST_ASSERT(pitEntry.getName().at(-1).isImplicitSha256Digest());
-  BOOST_ASSERT(nte->getName() == pitEntry.getName().getPrefix(-1));
   return this->lookup(pitEntry.getName());
 }
 
@@ -200,23 +184,10 @@ NameTree::findLongestPrefixMatch<strategy_choice::Entry>(const strategy_choice::
                                                          const EntrySelector&) const;
 
 Entry*
-NameTree::findLongestPrefixMatch(const pit::Entry& pitEntry, const EntrySelector& entrySelector) const
+NameTree::findLongestPrefixMatch(const pit::Entry& pitEntry,
+                                 const EntrySelector& entrySelector) const
 {
-  const Entry* nte = this->getEntry(pitEntry);
-  BOOST_ASSERT(nte != nullptr);
-
-  if (nte->getName().size() < pitEntry.getName().size()) {
-    // special case: PIT entry whose Interest name ends with an implicit digest
-    // are attached to the name tree entry with one-shorter-prefix.
-    BOOST_ASSERT(pitEntry.getName().at(-1).isImplicitSha256Digest());
-    BOOST_ASSERT(nte->getName() == pitEntry.getName().getPrefix(-1));
-    const Entry* exact = this->findExactMatch(pitEntry.getName());
-    if (exact != nullptr) {
-      nte = exact;
-    }
-  }
-
-  return this->findLongestPrefixMatch(*nte, entrySelector);
+  return this->findLongestPrefixMatch(pitEntry.getName(), entrySelector);
 }
 
 boost::iterator_range<NameTree::const_iterator>

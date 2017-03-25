@@ -27,7 +27,8 @@
 #define NFD_DAEMON_TABLE_PIT_HPP
 
 #include "pit-entry.hpp"
-#include "pit-iterator.hpp"
+#include <boost/range/adaptor/indirected.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace nfd {
 namespace pit {
@@ -46,8 +47,7 @@ typedef std::vector<shared_ptr<Entry>> DataMatchResult;
 class Pit : noncopyable
 {
 public:
-  explicit
-  Pit(NameTree& nameTree);
+  Pit();
 
   /** \return number of entries
    */
@@ -62,10 +62,7 @@ public:
    *  \return an existing entry with same Name and Selectors; otherwise nullptr
    */
   shared_ptr<Entry>
-  find(const Interest& interest) const
-  {
-    return const_cast<Pit*>(this)->findOrInsert(interest, false).first;
-  }
+  find(const Interest& interest) const;
 
   /** \brief inserts a PIT entry for Interest
    *  \param interest the Interest; must be created with make_shared
@@ -73,10 +70,7 @@ public:
    *          and true for new entry, false for existing entry
    */
   std::pair<shared_ptr<Entry>, bool>
-  insert(const Interest& interest)
-  {
-    return this->findOrInsert(interest, true);
-  }
+  insert(const Interest& interest);
 
   /** \brief performs a Data match
    *  \return an iterable of all PIT entries matching data
@@ -87,10 +81,7 @@ public:
   /** \brief deletes an entry
    */
   void
-  erase(Entry* entry)
-  {
-    this->erase(entry, true);
-  }
+  erase(Entry* entry);
 
   /** \brief deletes in-record and out-record for face
    */
@@ -98,7 +89,9 @@ public:
   deleteInOutRecords(Entry* entry, const Face& face);
 
 public: // enumeration
-  typedef Iterator const_iterator;
+  using Table = std::map<InterestDigest, shared_ptr<Entry>>;
+  using ForwardRange = boost::indirected_range<const boost::select_second_const_range<Table>>;
+  using const_iterator = boost::range_iterator<ForwardRange>::type;
 
   /** \return an iterator to the beginning
    *  \note Iteration order is implementation-defined.
@@ -112,28 +105,14 @@ public: // enumeration
    *  \sa begin()
    */
   const_iterator
-  end() const
-  {
-    return Iterator();
-  }
+  end() const;
 
 private:
-  void
-  erase(Entry* pitEntry, bool canDeleteNte);
-
-  /** \brief finds or inserts a PIT entry for Interest
-   *  \param interest the Interest; must be created with make_shared if allowInsert
-   *  \param allowInsert whether inserting new entry is allowed.
-   *  \return if allowInsert, a new or existing entry with same Name+Selectors,
-   *          and true for new entry, false for existing entry;
-   *          if not allowInsert, an existing entry with same Name+Selectors and false,
-   *          or {nullptr, true} if there's no existing entry
-   */
-  std::pair<shared_ptr<Entry>, bool>
-  findOrInsert(const Interest& interest, bool allowInsert);
+  ForwardRange
+  getForwardRange() const;
 
 private:
-  NameTree& m_nameTree;
+  Table m_table;
   size_t m_nItems;
 };
 

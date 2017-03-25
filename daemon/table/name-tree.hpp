@@ -249,6 +249,13 @@ private:
   friend class EnumerationImpl;
 };
 
+template<>
+inline Entry*
+NameTree::getEntry<pit::Entry>(const pit::Entry& pitEntry) const
+{
+  return this->findExactMatch(pitEntry.getName());
+}
+
 } // namespace name_tree
 
 using name_tree::NameTree;

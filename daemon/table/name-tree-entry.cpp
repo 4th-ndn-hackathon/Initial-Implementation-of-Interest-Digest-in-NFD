@@ -64,7 +64,6 @@ bool
 Entry::hasTableEntries() const
 {
   return m_fibEntry != nullptr ||
-         !m_pitEntries.empty() ||
          m_measurementsEntry != nullptr ||
          m_strategyChoiceEntry != nullptr;
 }
@@ -82,31 +81,6 @@ Entry::setFibEntry(unique_ptr<fib::Entry> fibEntry)
   if (m_fibEntry != nullptr) {
     m_fibEntry->m_nameTreeEntry = this;
   }
-}
-
-void
-Entry::insertPitEntry(shared_ptr<pit::Entry> pitEntry)
-{
-  BOOST_ASSERT(pitEntry != nullptr);
-  BOOST_ASSERT(pitEntry->m_nameTreeEntry == nullptr);
-
-  m_pitEntries.push_back(pitEntry);
-  pitEntry->m_nameTreeEntry = this;
-}
-
-void
-Entry::erasePitEntry(pit::Entry* pitEntry)
-{
-  BOOST_ASSERT(pitEntry != nullptr);
-  BOOST_ASSERT(pitEntry->m_nameTreeEntry == this);
-
-  auto it = std::find_if(m_pitEntries.begin(), m_pitEntries.end(),
-    [pitEntry] (const shared_ptr<pit::Entry>& pitEntry2) { return pitEntry2.get() == pitEntry; });
-  BOOST_ASSERT(it != m_pitEntries.end());
-
-  pitEntry->m_nameTreeEntry = nullptr; // must be done before pitEntry is deallocated
-  *it = m_pitEntries.back(); // may deallocate pitEntry
-  m_pitEntries.pop_back();
 }
 
 void

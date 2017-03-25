@@ -57,8 +57,7 @@ typedef std::list<OutRecord> OutRecordCollection;
 class Entry : public StrategyInfoHost, noncopyable
 {
 public:
-  explicit
-  Entry(const Interest& interest);
+  Entry(const Interest& interest, const InterestDigest& d);
 
   /** \return the representative Interest of the PIT entry
    *  \note Every Interest in in-records and out-records should have same Name and Selectors
@@ -236,14 +235,12 @@ public:
    */
   scheduler::EventId m_stragglerTimer;
 
+  const InterestDigest m_digest;
+
 private:
   shared_ptr<const Interest> m_interest;
   InRecordCollection m_inRecords;
   OutRecordCollection m_outRecords;
-
-  name_tree::Entry* m_nameTreeEntry;
-
-  friend class name_tree::Entry;
 };
 
 } // namespace pit

@@ -116,24 +116,6 @@ public: // attached table entries
   void
   setFibEntry(unique_ptr<fib::Entry> fibEntry);
 
-  bool
-  hasPitEntries() const
-  {
-    return !this->getPitEntries().empty();
-  }
-
-  const std::vector<shared_ptr<pit::Entry>>&
-  getPitEntries() const
-  {
-    return m_pitEntries;
-  }
-
-  void
-  insertPitEntry(shared_ptr<pit::Entry> pitEntry);
-
-  void
-  erasePitEntry(pit::Entry* pitEntry);
-
   measurements::Entry*
   getMeasurementsEntry() const
   {
@@ -171,7 +153,6 @@ private:
   std::vector<Entry*> m_children;
 
   unique_ptr<fib::Entry> m_fibEntry;
-  std::vector<shared_ptr<pit::Entry>> m_pitEntries;
   unique_ptr<measurements::Entry> m_measurementsEntry;
   unique_ptr<strategy_choice::Entry> m_strategyChoiceEntry;
 

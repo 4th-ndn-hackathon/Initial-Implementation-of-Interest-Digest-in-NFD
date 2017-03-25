@@ -97,6 +97,7 @@ using std::cref;
 using ndn::to_string;
 
 using ndn::Interest;
+using ndn::InterestDigest;
 using ndn::Data;
 using ndn::Name;
 using ndn::PartialName;

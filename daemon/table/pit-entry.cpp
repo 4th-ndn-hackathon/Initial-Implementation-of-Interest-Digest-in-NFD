@@ -29,9 +29,9 @@
 namespace nfd {
 namespace pit {
 
-Entry::Entry(const Interest& interest)
-  : m_interest(interest.shared_from_this())
-  , m_nameTreeEntry(nullptr)
+Entry::Entry(const Interest& interest, const InterestDigest& d)
+  : m_digest(d)
+  , m_interest(interest.shared_from_this())
 {
 }
 
@@ -43,8 +43,9 @@ Entry::canMatch(const Interest& interest, size_t nEqualNameComps) const
 
   return m_interest->getName().compare(nEqualNameComps, Name::npos,
                                        interest.getName(), nEqualNameComps) == 0 &&
-         m_interest->getSelectors() == interest.getSelectors();
-  /// \todo #3162 match Link field
+         m_interest->getSelectors() == interest.getSelectors() &&
+         m_interest->hasLink() == interest.hasLink() &&
+         (!m_interest->hasLink() || m_interest->getLink() == interest.getLink());
 }
 
 InRecordCollection::iterator

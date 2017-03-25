@@ -202,15 +202,6 @@ clearStrategyInfo(const name_tree::Entry& nte)
 {
   NFD_LOG_TRACE("clearStrategyInfo " << nte.getName());
 
-  for (const shared_ptr<pit::Entry>& pitEntry : nte.getPitEntries()) {
-    pitEntry->clearStrategyInfo();
-    for (const pit::InRecord& inRecord : pitEntry->getInRecords()) {
-      const_cast<pit::InRecord&>(inRecord).clearStrategyInfo();
-    }
-    for (const pit::OutRecord& outRecord : pitEntry->getOutRecords()) {
-      const_cast<pit::OutRecord&>(outRecord).clearStrategyInfo();
-    }
-  }
   if (nte.getMeasurementsEntry() != nullptr) {
     nte.getMeasurementsEntry()->clearStrategyInfo();
   }
