@@ -24,6 +24,11 @@
 #include "util/crypto.hpp"
 #include "data.hpp"
 
+#include "security/transform/step-source.hpp"
+#include "security/transform/digest-filter.hpp"
+#include "security/transform/stream-sink.hpp"
+#include "encoding/buffer-stream.hpp"
+
 #include <cstring>
 
 namespace ndn {
@@ -63,7 +68,22 @@ Interest::Interest(const Block& wire)
 InterestDigest
 Interest::computeDigest() const
 {
-  return {};
+  using namespace ndn::security::transform;
+  StepSource source;
+  OBufferStream os;
+  source >> digestFilter(DigestAlgorithm::SHA256) >> streamSink(os);
+  source.write(m_name.wireEncode().wire(), m_name.wireEncode().size());
+  // if (!m_selectors.empty()) {
+  //   source.write(m_selector);
+  // }
+  source.end();
+
+  InterestDigest d;
+  ConstBufferPtr buf = os.buf();
+  BOOST_ASSERT(std::distance(buf->begin(), buf->end()) == d.size());
+  std::cout << "size of the sha256: " << std::distance(buf->begin(), buf->end()) << std::endl;
+  std::copy_n(buf->begin(), std::distance(buf->begin(), buf->end()), d.data());
+  return d;
 }
 
 uint32_t
