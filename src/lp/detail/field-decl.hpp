@@ -27,6 +27,7 @@
 
 #include "../../encoding/block-helpers.hpp"
 #include "../../util/concepts.hpp"
+#include "../../interest.hpp"
 #include <boost/concept/requires.hpp>
 
 namespace ndn {
@@ -70,6 +71,21 @@ struct DecodeHelper<TlvType, std::pair<Buffer::const_iterator, Buffer::const_ite
   }
 };
 
+template<typename TlvType>
+struct DecodeHelper<TlvType, InterestDigest> 
+{
+  static InterestDigest
+  decode(const Block& wire)
+  {
+    if (wire.value_size() == 0) {
+      BOOST_THROW_EXCEPTION(ndn::tlv::Error(to_string(wire.type()) + " must not be empty"));
+    }
+    InterestDigest d;
+    std::copy_n(wire.value_begin(), d.size(), std::begin(d));
+    return d;
+  }
+};
+
 template<typename encoding::Tag TAG, typename TlvType, typename T>
 struct EncodeHelper
 {
@@ -99,6 +115,20 @@ struct EncodeHelper<TAG, TlvType, std::pair<Buffer::const_iterator, Buffer::cons
   {
     size_t length = 0;
     length += encoder.prependRange(value.first, value.second);
+    length += encoder.prependVarNumber(length);
+    length += encoder.prependVarNumber(TlvType::value);
+    return length;
+  }
+};
+
+template<typename encoding::Tag TAG, typename TlvType>
+struct EncodeHelper<TAG, TlvType, InterestDigest>
+{
+  static size_t
+  encode(EncodingImpl<TAG>& encoder, const InterestDigest& value) 
+  {
+    size_t length = 0;
+    length += encoder.prependByteArray(value.data(), value.size());
     length += encoder.prependVarNumber(length);
     length += encoder.prependVarNumber(TlvType::value);
     return length;

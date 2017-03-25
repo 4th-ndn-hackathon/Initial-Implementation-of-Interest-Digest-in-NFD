@@ -74,6 +74,11 @@ typedef detail::FieldDecl<field_location_tags::Header,
 BOOST_CONCEPT_ASSERT((Field<CongestionMarkField>));
 
 typedef detail::FieldDecl<field_location_tags::Header,
+                          InterestDigest,
+                          tlv::InterestDigest> InterestDigestField;
+BOOST_CONCEPT_ASSERT((Field<InterestDigestField>));
+
+typedef detail::FieldDecl<field_location_tags::Header,
                           Sequence,
                           tlv::Ack,
                           true> AckField;
@@ -101,6 +106,7 @@ typedef boost::mpl::set<
   CachePolicyField,
   IncomingFaceIdField,
   CongestionMarkField,
+  InterestDigestField,
   AckField
   > FieldSet;
 

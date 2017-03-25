@@ -56,6 +56,14 @@ typedef SimpleTag<CachePolicy, 12> CachePolicyTag;
  */
 typedef SimpleTag<uint64_t, 13> CongestionMarkTag;
 
+
+/** \class InterestDigestTag
+ *  \brief a packet tag for InterestDigest field;
+ *
+ * This tag can be attached to Interest, Data, Nack.
+ */
+typedef SimpleTag<InterestDigest, 9099> InterestDigestTag;
+
 } // namespace lp
 } // namespace ndn
 
