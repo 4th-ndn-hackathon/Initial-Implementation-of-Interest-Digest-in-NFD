@@ -40,7 +40,12 @@ Pit::Pit()
 shared_ptr<Entry>
 Pit::find(const Interest& interest) const
 {
-  InterestDigest d = interest.computeDigest();
+  auto tag = interest.getTag<lp::InterestDigestTag>();
+  if (tag == nullptr) {
+    NFD_LOG_WARN("Interest " << interest.getName() << " has no InterestDigestTag");
+    return nullptr;
+  }
+  InterestDigest d = *tag;
   auto it = m_table.find(d);
   return it == m_table.end() ? nullptr : it->second;
 }
@@ -48,7 +53,12 @@ Pit::find(const Interest& interest) const
 std::pair<shared_ptr<Entry>, bool>
 Pit::insert(const Interest& interest)
 {
-  InterestDigest d = interest.computeDigest();
+  auto tag = interest.getTag<lp::InterestDigestTag>();
+  if (tag == nullptr) {
+    NFD_LOG_WARN("Interest " << interest.getName() << " has no InterestDigestTag");
+    return {nullptr, true};
+  }
+  InterestDigest d = *tag;
   std::map<InterestDigest, shared_ptr<Entry>>::iterator it, upper;
   std::tie(it, upper) = m_table.equal_range(d);
 
