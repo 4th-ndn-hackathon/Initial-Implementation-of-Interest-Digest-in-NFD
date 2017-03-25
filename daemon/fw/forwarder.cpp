@@ -430,6 +430,10 @@ Forwarder::onIncomingNack(Face& inFace, const lp::Nack& nack)
   }
 
   // PIT match
+  auto tag = nack.getTag<lp::InterestDigestTag>();
+  if (tag != nullptr) {
+    nack.getInterest().setTag(tag);
+  }
   shared_ptr<pit::Entry> pitEntry = m_pit.find(nack.getInterest());
   // if no PIT entry found, drop
   if (pitEntry == nullptr) {
