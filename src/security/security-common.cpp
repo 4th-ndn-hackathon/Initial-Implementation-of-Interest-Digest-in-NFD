@@ -76,6 +76,8 @@ operator<<(std::ostream& os, DigestAlgorithm algorithm)
   switch (algorithm) {
     case DigestAlgorithm::NONE:
       return os << "NONE";
+    case DigestAlgorithm::SHA1:
+      return os << "SHA1";
     case DigestAlgorithm::SHA256:
       return os << "SHA256";
   };

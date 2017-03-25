@@ -71,7 +71,7 @@ Interest::computeDigest() const
   using namespace ndn::security::transform;
   StepSource source;
   OBufferStream os;
-  source >> digestFilter(DigestAlgorithm::SHA256) >> streamSink(os);
+  source >> digestFilter(DigestAlgorithm::SHA1) >> streamSink(os);
   source.write(m_name.wireEncode().wire(), m_name.wireEncode().size());
   if (!m_selectors.empty()) {
     source.write(m_selectors.wireEncode().wire(), m_selectors.wireEncode().size());

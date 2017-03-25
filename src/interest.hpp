@@ -37,7 +37,7 @@ class Data;
  */
 const time::milliseconds DEFAULT_INTEREST_LIFETIME = time::milliseconds(4000);
 
-using InterestDigest = std::array<uint8_t, 32>;
+using InterestDigest = std::array<uint8_t, 20>;
 
 /** @brief represents an Interest packet
  */

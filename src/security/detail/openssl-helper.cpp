@@ -29,6 +29,8 @@ const EVP_MD*
 toDigestEvpMd(DigestAlgorithm algo)
 {
   switch (algo) {
+  case DigestAlgorithm::SHA1:
+    return EVP_sha1();
   case DigestAlgorithm::SHA256:
     return EVP_sha256();
   default:
