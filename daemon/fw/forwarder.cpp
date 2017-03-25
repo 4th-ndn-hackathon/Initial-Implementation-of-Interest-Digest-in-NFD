@@ -250,7 +250,7 @@ Forwarder::onContentStoreHit(const Face& inFace, const shared_ptr<pit::Entry>& p
   this->setStragglerTimer(pitEntry, true, data.getFreshnessPeriod());
 
   // goto outgoing Data pipeline
-  this->onOutgoingData(data, *const_pointer_cast<Face>(inFace.shared_from_this()));
+  this->onOutgoingData(pitEntry, data, *const_pointer_cast<Face>(inFace.shared_from_this()));
 }
 
 void
@@ -356,7 +356,7 @@ Forwarder::onIncomingData(Face& inFace, const Data& data)
   for (const pit::InRecord& inRecord : pitEntry->getInRecords()) {
     if (inRecord.getExpiry() > now && &inRecord.getFace() != &inFace) {
       // goto outgoing Data pipeline
-      this->onOutgoingData(data, inRecord.getFace());
+      this->onOutgoingData(pitEntry, data, inRecord.getFace());
     }
   }
 
@@ -387,7 +387,7 @@ Forwarder::onDataUnsolicited(Face& inFace, const Data& data)
 }
 
 void
-Forwarder::onOutgoingData(const Data& data, Face& outFace)
+Forwarder::onOutgoingData(const shared_ptr<pit::Entry>& pitEntry, const Data& data, Face& outFace)
 {
   if (outFace.getId() == face::INVALID_FACEID) {
     NFD_LOG_WARN("onOutgoingData face=invalid data=" << data.getName());
@@ -406,6 +406,8 @@ Forwarder::onOutgoingData(const Data& data, Face& outFace)
   }
 
   // TODO traffic manager
+
+  data.setTag(make_shared<lp::InterestDigestTag>(pitEntry->m_digest));
 
   // send Data
   outFace.sendData(data);

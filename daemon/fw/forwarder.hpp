@@ -231,7 +231,7 @@ PUBLIC_WITH_TESTS_ELSE_PRIVATE: // pipelines
   /** \brief outgoing Data pipeline
    */
   VIRTUAL_WITH_TESTS void
-  onOutgoingData(const Data& data, Face& outFace);
+  onOutgoingData(const shared_ptr<pit::Entry>& pitEntry, const Data& data, Face& outFace);
 
   /** \brief incoming Nack pipeline
    */
