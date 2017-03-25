@@ -33,15 +33,6 @@
 namespace nfd {
 namespace pit {
 
-/** \class DataMatchResult
- *  \brief an unordered iterable of all PIT entries matching Data
- *
- *  This type shall support:
- *    iterator<shared_ptr<Entry>> begin()
- *    iterator<shared_ptr<Entry>> end()
- */
-typedef std::vector<shared_ptr<Entry>> DataMatchResult;
-
 /** \brief represents the Interest Table
  */
 class Pit : noncopyable
@@ -75,8 +66,8 @@ public:
   /** \brief performs a Data match
    *  \return an iterable of all PIT entries matching data
    */
-  DataMatchResult
-  findAllDataMatches(const Data& data) const;
+  shared_ptr<Entry>
+  findDataMatch(const Data& data) const;
 
   /** \brief deletes an entry
    */

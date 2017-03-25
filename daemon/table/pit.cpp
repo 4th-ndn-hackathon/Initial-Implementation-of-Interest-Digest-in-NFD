@@ -63,24 +63,22 @@ Pit::insert(const Interest& interest)
   }
 }
 
-DataMatchResult
-Pit::findAllDataMatches(const Data& data) const
+shared_ptr<Entry>
+Pit::findDataMatch(const Data& data) const
 {
-  DataMatchResult matches;
-
   auto tag = data.getTag<lp::InterestDigestTag>();
   if (tag == nullptr) {
     NFD_LOG_WARN("Data " << data.getName() << " has no InterestDigestTag");
-    return matches;
+    return nullptr;
   }
 
   InterestDigest d = *tag;
   auto it = m_table.find(d);
   if (it != m_table.end() && it->second->getInterest().matchesData(data)) {
-    matches.emplace_back(it->second);
+    return it->second;
   }
 
-  return matches;
+  return nullptr;
 }
 
 void

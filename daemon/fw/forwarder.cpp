@@ -331,8 +331,8 @@ Forwarder::onIncomingData(Face& inFace, const Data& data)
   }
 
   // PIT match
-  pit::DataMatchResult pitMatches = m_pit.findAllDataMatches(data);
-  if (pitMatches.begin() == pitMatches.end()) {
+  shared_ptr<pit::Entry> pitEntry = m_pit.findDataMatch(data);
+  if (pitEntry == nullptr) {
     // goto Data unsolicited pipeline
     this->onDataUnsolicited(inFace, data);
     return;
@@ -341,45 +341,34 @@ Forwarder::onIncomingData(Face& inFace, const Data& data)
   // CS insert
   m_cs.insert(data);
 
-  std::set<Face*> pendingDownstreams;
   // foreach PitEntry
   auto now = time::steady_clock::now();
-  for (const shared_ptr<pit::Entry>& pitEntry : pitMatches) {
-    NFD_LOG_DEBUG("onIncomingData matching=" << pitEntry->getName());
+  NFD_LOG_DEBUG("onIncomingData matching=" << pitEntry->getName());
 
-    // cancel unsatisfy & straggler timer
-    this->cancelUnsatisfyAndStragglerTimer(*pitEntry);
+  // cancel unsatisfy & straggler timer
+  this->cancelUnsatisfyAndStragglerTimer(*pitEntry);
 
-    // remember pending downstreams
-    for (const pit::InRecord& inRecord : pitEntry->getInRecords()) {
-      if (inRecord.getExpiry() > now) {
-        pendingDownstreams.insert(&inRecord.getFace());
-      }
-    }
-
-    // invoke PIT satisfy callback
-    this->dispatchToStrategy(*pitEntry,
-      [&] (fw::Strategy& strategy) { strategy.beforeSatisfyInterest(pitEntry, inFace, data); });
-
-    // Dead Nonce List insert if necessary (for out-record of inFace)
-    this->insertDeadNonceList(*pitEntry, true, data.getFreshnessPeriod(), &inFace);
-
-    // mark PIT satisfied
-    pitEntry->clearInRecords();
-    pitEntry->deleteOutRecord(inFace);
-
-    // set PIT straggler timer
-    this->setStragglerTimer(pitEntry, true, data.getFreshnessPeriod());
-  }
+  // invoke PIT satisfy callback
+  this->dispatchToStrategy(*pitEntry,
+    [&] (fw::Strategy& strategy) { strategy.beforeSatisfyInterest(pitEntry, inFace, data); });
 
   // foreach pending downstream
-  for (Face* pendingDownstream : pendingDownstreams) {
-    if (pendingDownstream == &inFace) {
-      continue;
+  for (const pit::InRecord& inRecord : pitEntry->getInRecords()) {
+    if (inRecord.getExpiry() > now && &inRecord.getFace() != &inFace) {
+      // goto outgoing Data pipeline
+      this->onOutgoingData(data, inRecord.getFace());
     }
-    // goto outgoing Data pipeline
-    this->onOutgoingData(data, *pendingDownstream);
   }
+
+  // Dead Nonce List insert if necessary (for out-record of inFace)
+  this->insertDeadNonceList(*pitEntry, true, data.getFreshnessPeriod(), &inFace);
+
+  // mark PIT satisfied
+  pitEntry->clearInRecords();
+  pitEntry->deleteOutRecord(inFace);
+
+  // set PIT straggler timer
+  this->setStragglerTimer(pitEntry, true, data.getFreshnessPeriod());
 }
 
 void
