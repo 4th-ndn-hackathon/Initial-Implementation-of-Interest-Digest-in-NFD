@@ -37,6 +37,8 @@ class Data;
  */
 const time::milliseconds DEFAULT_INTEREST_LIFETIME = time::milliseconds(4000);
 
+using InterestDigest = std::array<uint8_t, 20>;
+
 /** @brief represents an Interest packet
  */
 class Interest : public TagHost, public enable_shared_from_this<Interest>
@@ -117,6 +119,9 @@ public:
    */
   std::string
   toUri() const;
+
+  InterestDigest
+  computeDigest() const;
 
 public: // Link and forwarding hint
   /**

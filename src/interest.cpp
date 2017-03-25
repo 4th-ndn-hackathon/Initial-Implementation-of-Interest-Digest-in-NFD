@@ -60,6 +60,12 @@ Interest::Interest(const Block& wire)
   wireDecode(wire);
 }
 
+InterestDigest
+Interest::computeDigest() const
+{
+  return {};
+}
+
 uint32_t
 Interest::getNonce() const
 {
