@@ -17,4 +17,17 @@ NFD and benchmark its benefit on forwarding performance.
 ndn-cxx-baseline and NFD-baseline branches contain the code we started with.
 ndn-cxx and NFD branches contain commits that implement Interest digest.
 
-## Benchmark Results
+## Benchmark
+
+Benchmarking method is documented in `benchmark.md`.
+
+With 4-component names like `/N/P1/ping/8888`:
+
+* baseline: router CPU usage 93-96%, RTT 3.83ms
+* Interest digest: router CPU usage 91-94%, RTT 2.44ms
+
+With 11-component names like `/A/B/C/D/E/F/G/H/P1/ping/8888`:
+
+* baseline: router CPU usage 95-98%, RTT 13.19ms
+* Interest digest: router CPU usage 95-97%, RTT 13.12ms
+
