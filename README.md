@@ -7,6 +7,8 @@ Project members:
 * [Qi Zhao](https://irl.cs.ucla.edu/~qzhao/) (University of California, Los Angeles)
 * [Chengyu Fan](https://www.linkedin.com/in/chengyu-fan-5a56b227) (Colorado State University)
 
+[4th NDN Hackathon presentation](https://www.slideshare.net/yoursunny/nfd-interestdigest)
+
 ## Goal
 
 Implement [Interest digest](https://redmine.named-data.net/issues/3333) in
