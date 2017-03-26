@@ -71,12 +71,19 @@ public:
     return *m_strategy;
   }
 
+  weak_ptr<fw::Strategy>
+  getStrategyWeak() const
+  {
+    BOOST_ASSERT(m_strategy != nullptr);
+    return m_strategy;
+  }
+
   void
-  setStrategy(unique_ptr<fw::Strategy> strategy);
+  setStrategy(shared_ptr<fw::Strategy> strategy);
 
 private:
   Name m_prefix;
-  unique_ptr<fw::Strategy> m_strategy;
+  shared_ptr<fw::Strategy> m_strategy;
 
   name_tree::Entry* m_nameTreeEntry;
   friend class name_tree::Entry;

@@ -35,6 +35,9 @@ namespace nfd {
 namespace name_tree {
 class Entry;
 } // namespace name_tree
+namespace fw {
+class Strategy;
+} // namespace fw
 
 namespace pit {
 
@@ -236,6 +239,8 @@ public:
   scheduler::EventId m_stragglerTimer;
 
   const InterestDigest m_digest;
+
+  weak_ptr<fw::Strategy> m_strategy;
 
 private:
   shared_ptr<const Interest> m_interest;

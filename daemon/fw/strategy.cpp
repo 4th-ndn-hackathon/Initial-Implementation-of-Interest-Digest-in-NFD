@@ -86,7 +86,7 @@ Strategy::canCreate(const Name& instanceName)
   return Strategy::find(instanceName) != getRegistry().end();
 }
 
-unique_ptr<Strategy>
+shared_ptr<Strategy>
 Strategy::create(const Name& instanceName, Forwarder& forwarder)
 {
   auto found = Strategy::find(instanceName);
@@ -95,7 +95,7 @@ Strategy::create(const Name& instanceName, Forwarder& forwarder)
     return nullptr;
   }
 
-  unique_ptr<Strategy> instance = found->second(forwarder, instanceName);
+  shared_ptr<Strategy> instance = found->second(forwarder, instanceName);
   NFD_LOG_DEBUG("create " << instanceName << " found=" << found->first <<
                 " created=" << instance->getInstanceName());
   BOOST_ASSERT(!instance->getInstanceName().empty());

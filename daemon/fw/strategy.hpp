@@ -51,7 +51,7 @@ public: // registry
     BOOST_ASSERT(strategyName.at(-1).isVersion());
     Registry& registry = getRegistry();
     BOOST_ASSERT(registry.count(strategyName) == 0);
-    registry[strategyName] = &make_unique<S, Forwarder&, const Name&>;
+    registry[strategyName] = &make_shared<S, Forwarder&, const Name&>;
   }
 
   /** \return whether a strategy instance can be created from \p instanceName
@@ -67,7 +67,7 @@ public: // registry
    *  \throw std::invalid_argument strategy type constructor does not accept
    *                               specified version or parameters
    */
-  static unique_ptr<Strategy>
+  static shared_ptr<Strategy>
   create(const Name& instanceName, Forwarder& forwarder);
 
   /** \return whether \p instanceNameA and \p instanceNameA will initiate same strategy type
@@ -293,7 +293,7 @@ protected: // instance name
   }
 
 private: // registry
-  typedef std::function<unique_ptr<Strategy>(Forwarder& forwarder, const Name& strategyName)> CreateFunc;
+  typedef std::function<shared_ptr<Strategy>(Forwarder& forwarder, const Name& strategyName)> CreateFunc;
   typedef std::map<Name, CreateFunc> Registry; // indexed by strategy name
 
   static Registry&

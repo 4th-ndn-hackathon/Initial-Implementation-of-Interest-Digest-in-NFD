@@ -45,7 +45,7 @@ Entry::getStrategyInstanceName() const
 }
 
 void
-Entry::setStrategy(unique_ptr<fw::Strategy> strategy)
+Entry::setStrategy(shared_ptr<fw::Strategy> strategy)
 {
   m_strategy = std::move(strategy);
 }

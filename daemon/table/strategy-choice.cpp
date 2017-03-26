@@ -69,7 +69,7 @@ StrategyChoice::setDefaultStrategy(const Name& strategyName)
 StrategyChoice::InsertResult
 StrategyChoice::insert(const Name& prefix, const Name& strategyName)
 {
-  unique_ptr<Strategy> strategy;
+  shared_ptr<Strategy> strategy;
   try {
     strategy = Strategy::create(strategyName, m_forwarder);
   }
@@ -188,7 +188,15 @@ StrategyChoice::findEffectiveStrategy(const Name& prefix) const
 Strategy&
 StrategyChoice::findEffectiveStrategy(const pit::Entry& pitEntry) const
 {
-  return this->findEffectiveStrategyImpl(pitEntry);
+  shared_ptr<Strategy> strategy = pitEntry.m_strategy.lock();
+  if (strategy != nullptr) {
+    return *strategy;
+  }
+
+  const name_tree::Entry* nte = m_nameTree.findLongestPrefixMatch(pitEntry, &nteHasStrategyChoiceEntry);
+  BOOST_ASSERT(nte != nullptr);
+  const_cast<pit::Entry&>(pitEntry).m_strategy = nte->getStrategyChoiceEntry()->getStrategyWeak();
+  return nte->getStrategyChoiceEntry()->getStrategy();
 }
 
 Strategy&
